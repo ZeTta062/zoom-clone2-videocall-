@@ -15,7 +15,18 @@ app.get("/*", (req, res) => res.redirect("/")); //CATCHALL URL
 const httpServer = http.createServer(app);          //express
 const wsServer = new Server(httpServer);
 
-
+wsServer.on("connection", backSocket => {           // 서버 연결
+    backSocket.on("join_room", (roomName) => {        // {roomName}인 방에 입장
+        backSocket.join(roomName); 
+        backSocket.to(roomName).emit("welcome");
+    })
+    backSocket.on("offer", (offer, roomName) => {
+        backSocket.to(roomName).emit("offer", offer);
+    })
+    backSocket.on("answer", (answer, roomName) => {
+        backSocket.to(roomName).emit("answer", answer);
+    })
+})
 
 
 const handleListen = () => console.log('Listening on http://localhost:3000');
