@@ -26,6 +26,9 @@ wsServer.on("connection", backSocket => {           // 서버 연결
     backSocket.on("answer", (answer, roomName) => {
         backSocket.to(roomName).emit("answer", answer);
     })
+    backSocket.on("ice", (ice, roomName) => {
+        backSocket.to(roomName).emit("ice", ice);
+    })
 })
 
 

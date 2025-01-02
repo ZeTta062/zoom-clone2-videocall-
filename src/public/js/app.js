@@ -120,19 +120,35 @@ frontSocket.on("welcome", async () => {
 });
 
 frontSocket.on("offer", async (offer) => {                      //offer를 받음, 참가자
+    console.log("received the offer");
     myPeerConnection.setRemoteDescription(offer);               //RemoteDescription을 설정함
     const answer = await myPeerConnection.createAnswer();       //answer를 만듦
     myPeerConnection.setLocalDescription(answer);               //answer를 전송
     frontSocket.emit("answer", answer, roomName);
+    console.log("sent the answer");
 });
 
 frontSocket.on("answer", (answer) => {
     myPeerConnection.setRemoteDescription(answer);              //answer를 받음, 호스트 
+    console.log("received the answer");
+})
+
+frontSocket.on("ice", (ice) => {
+    console.log("received candidate");
+    myPeerConnection.addIceCandidate(ice);
 })
 
 // RTC Code
 function makeConnection() {
     myPeerConnection = new RTCPeerConnection();
+    myPeerConnection.addEventListener("icecandidate", (data) => {
+        console.log("sent candidate");
+        frontSocket.emit("ice", data.candidate, roomName);
+    })
+    myPeerConnection.addEventListener("track",(data) => {
+        const peerFace = document.getElementById("peerFace");
+        peerFace.srcObject = data.streams[0];
+    })
     myStream
         .getTracks()
         .forEach((track) => myPeerConnection.addTrack(track, myStream));
